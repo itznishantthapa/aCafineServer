@@ -18,9 +18,11 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from authentication.views import signup
+from authentication.views import signup, update_phone_number, refresh_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/signup/', signup, name='signup'),
+    path('api/update-phone-number/', update_phone_number, name='update_phone_number'),
+    path('api/refresh-token/', refresh_token, name='refresh_token'),
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
