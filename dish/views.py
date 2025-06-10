@@ -5,24 +5,65 @@ from .models import Dish
 from rest_framework import status
 from authentication.permissions import IsSeller
 from rest_framework.decorators import permission_classes
+from .serializers import DishSerializer
+
 
 
 @api_view(['GET'])
 def get_dishes(request):
     dishes = Dish.objects.all()
-    return Response(dishes)
+    serializer = DishSerializer(dishes, many=True)
+    return Response({'success':True,'dishes':serializer.data},status=status.HTTP_201_CREATED)
 
-@api_view(['POST'])
-@permission_classes([IsSeller])
-def create_dish(request):
-    name = request.data.get('name')
-    description = request.data.get('description')
-    price = request.data.get('price')
-    image = request.data.get('image')
-    is_available = request.data.get('is_available')
+
+
+
+@api_view(['GET'])
+def get_specific_dish(request):
+    dish_id = request.query_params.get('id')
+
+    if not dish_id:
+        return Response({'error': 'Dish ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        dish = Dish.objects.create(name=name, description=description, price=price, image=image, is_available=is_available)
-        return Response(dish)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        dish = Dish.objects.get(id=dish_id)
+        serializer = DishSerializer(dish)
+        return Response({'success':True,'dish':serializer.data}, status=status.HTTP_201_CREATED)
+    except Dish.DoesNotExist:
+        return Response({'error': 'Dish not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+@api_view(['POST'])
+# @permission_classes([IsSeller])
+def create_dish(request):
+    serializer = DishSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'success': True, 'dish': serializer.data}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'success': False, 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@api_view(['PUT'])
+@permission_classes([IsSeller])
+def update_dish(request):
+    dish_id = request.query_params.get('id')
+    
+    if not dish_id:
+        return Response({'error': 'Dish ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        dish = Dish.objects.get(id=dish_id)
+    except Dish.DoesNotExist:
+        return Response({'error': 'Dish not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = DishSerializer(dish, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'success': True, 'dish': serializer.data})
+    
+    return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

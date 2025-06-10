@@ -1,6 +1,9 @@
 from django.db import models
 from authentication.models import CustomUser
 from dish.models import Dish
+
+
+
 # Create your models here.
 # Order Model
 class Order(models.Model):
@@ -18,6 +21,8 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.id} by {self.customer.username}"
+
+
 
 
 #Here this tables allows user to order the different dishes
