@@ -3,14 +3,15 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Order , OrderItem
-from authentication.permissions import IsCustomer
+from authentication.permissions import IsSeller
 from rest_framework.decorators import permission_classes
 from dish.models import Dish
+from rest_framework.permissions import IsAuthenticated
 
 
 
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def create_order(request):
     user = request.user
     data = request.data  # expect: { "items": [{ "dish_id": 1, "quantity": 2 }, ...], "eat_mode": "EAT" }
@@ -28,11 +29,11 @@ def create_order(request):
 
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsSeller])
 def seller_orders(request):
     order_items = OrderItem.objects.select_related('order', 'dish').filter(
         order__is_ready=False,
-        order__is_paid=False  #order__is_ready is not a typo — it’s Django ORM’s way to filter on a related model’s field.
+        order__is_paid=True  #order__is_ready is not a typo — it’s Django ORM’s way to filter on a related model’s field.
     )
     
     result = {}
@@ -56,7 +57,7 @@ def seller_orders(request):
 
 
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsSeller])
 def mark_order_ready(request):
     order_id = request.query_params.get('id')
     
