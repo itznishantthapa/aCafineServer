@@ -33,7 +33,7 @@ def create_order(request):
 def seller_orders(request):
     order_items = OrderItem.objects.select_related('order', 'dish').filter(
         order__is_ready=False,
-        order__is_paid=True  #order__is_ready is not a typo — it’s Django ORM’s way to filter on a related model’s field.
+        order__is_paid=True  #order__is_ready is not a typo — it's Django ORM's way to filter on a related model's field.
     )
     
     result = {}
@@ -49,7 +49,7 @@ def seller_orders(request):
                 'items': []
             }
         result[order_id]['items'].append({
-            'dish_name': item.dish.name,
+            'dish_name': item.dish.title,
             'quantity': item.quantity
         })
 
@@ -73,3 +73,33 @@ def mark_order_ready(request):
     order.save()
 
     return Response({'message': f'Order #{order_id} marked as ready'})
+
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def get_user_orders(request):
+    user = request.user
+    orders = Order.objects.filter(customer=user).order_by('-order_time')
+    
+    result = []
+    for order in orders:
+        order_items = OrderItem.objects.filter(order=order).select_related('dish')
+        order_data = {
+            'order_id': order.id,
+            'order_time': order.order_time,
+            'eat_mode': order.eat_mode,
+            'is_ready': order.is_ready,
+            'is_paid': order.is_paid,
+            'items': []
+        }
+        
+        for item in order_items:
+            order_data['items'].append({
+                'dish_name': item.dish.title,
+                'quantity': item.quantity,
+                'price': item.dish.current_price
+            })
+            
+        result.append(order_data)
+    
+    return Response(result)

@@ -36,7 +36,7 @@ def get_specific_dish(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsSeller])
+# @permission_classes([IsSeller])
 def create_dish(request):
     serializer = DishSerializer(data=request.data)
     if serializer.is_valid():
