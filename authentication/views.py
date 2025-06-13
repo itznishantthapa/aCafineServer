@@ -1,10 +1,12 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from .models import CustomUser
 from .utils import get_tokens_for_user
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+
 
 
 
@@ -13,8 +15,6 @@ def signup(request):
     email = request.data.get('email')
     first_name = request.data.get('first_name')
     last_name = request.data.get('last_name')
-    phone = request.data.get('phone')
-    role = request.data.get('role')
 
     try:
         user = CustomUser.objects.get(email=email)
@@ -29,6 +29,19 @@ def signup(request):
         'tokens': tokens,
         'isNewUser': is_new_user  # True if user was just created, False if already existed
     })
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_phone_number(request):
+    phone = request.data.get('phone')
+
+    if not phone:
+        return Response({'success': False, 'error': 'Phone number is required'}, status=400)
+
+    request.user.phone = phone
+    request.user.save()
+
+    return Response({'success': True, 'message': 'Phone number updated successfully'})
 
 
 
