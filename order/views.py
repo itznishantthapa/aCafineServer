@@ -29,7 +29,7 @@ def create_order(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsSeller])
+# @permission_classes([IsSeller])
 def seller_orders(request):
     order_items = OrderItem.objects.select_related('order', 'dish').filter(
         order__is_ready=False,
@@ -57,7 +57,7 @@ def seller_orders(request):
 
 
 @api_view(['POST'])
-@permission_classes([IsSeller])
+# @permission_classes([IsSeller])
 def mark_order_ready(request):
     order_id = request.query_params.get('id')
     
@@ -103,3 +103,37 @@ def get_user_orders(request):
         result.append(order_data)
     
     return Response(result)
+
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def get_all_orders(request):
+    orders = Order.objects.all().order_by('-order_time')
+    
+    result = []
+    for order in orders:
+        order_items = OrderItem.objects.filter(order=order).select_related('dish')
+        order_data = {
+            'order_id': order.id,
+            'customer': {
+                'full_name': f"{order.customer.first_name} {order.customer.last_name}",
+                'phone': order.customer.phone
+            },
+            'order_time': order.order_time,
+            'eat_mode': order.eat_mode,
+            'is_ready': order.is_ready,
+            'is_paid': order.is_paid,
+            'items': []
+        }
+        
+        for item in order_items:
+            order_data['items'].append({
+                'dish_name': item.dish.title,
+                'quantity': item.quantity,
+                'price': item.dish.current_price
+            })
+            
+        result.append(order_data)
+    
+    return Response(result)
+

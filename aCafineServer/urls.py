@@ -19,8 +19,8 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from authentication.views import signup, update_phone_number, refresh_token
-from dish.views import get_dishes, create_dish, get_specific_dish ,update_dish
-from order.views import create_order , seller_orders , mark_order_ready ,get_user_orders
+from dish.views import get_dishes, create_dish, get_specific_dish ,update_dish, delete_dish
+from order.views import create_order , seller_orders , mark_order_ready ,get_user_orders,get_all_orders
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,5 +34,7 @@ urlpatterns = [
     path('api/create-order/',create_order,name='create_order'),
     path('api/seller-orders/',seller_orders,name='seller_orders'),
     path('api/mark-order-ready/',mark_order_ready,name='mark_order_ready'),
-    path('api/get-user-orders/',get_user_orders,name='get_user_orders')
+    path('api/get-user-orders/',get_user_orders,name='get_user_orders'),
+    path('api/get-all-orders/',get_all_orders,name='get_all_orders'),
+    path('api/delete-dish/',delete_dish,name='delete_dish'),
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

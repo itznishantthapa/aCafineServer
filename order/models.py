@@ -14,7 +14,7 @@ class Order(models.Model):
 
     customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     order_time = models.DateTimeField(auto_now_add=True)
-    is_paid = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=True)
     is_ready = models.BooleanField(default=False)
     eat_mode = models.CharField(max_length=4, choices=ORDER_MODE, default='EAT')
     esewa_transaction_id = models.CharField(max_length=100, blank=True)
